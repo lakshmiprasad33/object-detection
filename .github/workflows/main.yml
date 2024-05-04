@@ -18,7 +18,7 @@ jobs:
       - name: Push to hub
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        run: git push --force https://lp33:${HF_TOKEN}@huggingface.co/spaces/lp33/object-detection main
+        run: git push --force "https://lp33:${HF_TOKEN}@huggingface.co/spaces/lp33/object-detection"
 
 # Create an action to check file sizes automatically on any new PR
 name: Check file size
