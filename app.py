@@ -1,4 +1,3 @@
-from flask import Flask, render_template, request, jsonify
 import os
 import cv2
 import numpy as np
@@ -7,8 +6,7 @@ from object_detection.utils import label_map_util
 from object_detection.utils import visualization_utils as viz_utils
 from object_detection.builders import model_builder
 from object_detection.utils import config_util
-
-app = Flask(__name__)
+import streamlit as st
 
 # Load model and label map
 CUSTOM_MODEL_NAME = 'my_ssd_mobnet'
@@ -31,20 +29,10 @@ def detect_fn(image):
     detections = detection_model.postprocess(prediction_dict, shapes)
     return detections
 
-# Define route for object detection
-@app.route('/detect', methods=['POST'])
-def detect():
-    # Get image file from request
-    file = request.files['image']
-    
-    # Read image and convert to numpy array
-    img = cv2.imdecode(np.frombuffer(file.read(), np.uint8), cv2.IMREAD_COLOR)
-    image_np = np.array(img)
-    
-    # Perform object detection
+# Define object detection function
+def detect_objects(image_np):
     input_tensor = tf.convert_to_tensor(np.expand_dims(image_np, 0), dtype=tf.float32)
     detections = detect_fn(input_tensor)
-    
     num_detections = int(detections.pop('num_detections'))
     detections = {key: value[0, :num_detections].numpy() for key, value in detections.items()}
     detections['num_detections'] = num_detections
@@ -65,16 +53,21 @@ def detect():
         agnostic_mode=False
     )
     
-    # Convert image back to byte stream
-    ret, buffer = cv2.imencode('.jpg', image_np_with_detections)
-    img_str = buffer.tobytes()
+    return image_np_with_detections
+
+# Streamlit app
+st.title('Object Detection App')
+
+uploaded_file = st.file_uploader("Upload an image...", type=["jpg", "jpeg", "png"])
+
+if uploaded_file is not None:
+    file_bytes = np.asarray(bytearray(uploaded_file.read()), dtype=np.uint8)
+    img = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
+    st.image(img, caption='Uploaded Image', use_column_width=True)
     
-    return img_str
+    st.write("")
+    st.write("Detecting objects...")
+    
+    image_with_detections = detect_objects(img)
+    st.image(image_with_detections, caption='Image with Objects Detected', use_column_width=True)
 
-# Define index route
-@app.route('/', methods=['GET'])
-def index():
-    return render_template('index.html')
-
-if __name__ == "__main__":
-    app.run(debug=True)
