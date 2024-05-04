@@ -2,3 +2,4 @@ streamlit
 numpy
 tensorflow
 opencv-python==2-headless
+label_map_util
