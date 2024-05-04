@@ -1,26 +1,24 @@
 name: Sync to Hugging Face hub
 
 on:
-   push:
-      branches: [main]
-
-#to run this workflow manually from the Actions tab
-
-   workflow_dispatch:
+  push:
+    branches: [main]
+  # Allow manual triggering from the Actions tab
+  workflow_dispatch:
 
 jobs:
   sync-to-hub:
-      runs-on: ubuntu-latest
-steps:
- - uses: actions/checkout@v2
-   with:
-       fetch-depth: 0
--name: Push to hub
- env:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
 
-HF TOKEN: ${{ secrets.HF_TOKEN}}
-run: git push --force https://lp33: $HF_TOKEN@huggingface.co/spaces/lp33/object-detection main
+      - name: Push to hub
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: git push --force https://lp33:${HF_TOKEN}@huggingface.co/spaces/lp33/object-detection main
 
-Create an action so file sizes are automatically checked on any new PR
-
+# Create an action to check file sizes automatically on any new PR
 name: Check file size
